@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYA Cáceres - Selección de Perfil</title>
+<style>
+    :root {
+        --dya-red: #e60000;
+        --dya-dark: #c40000;
+        --kids-color: #ffcf2d;
+        --senior-color: #28a745;
+        --bg: #f0f2f5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        body { background-color: #1a1a1a; color: white; }
+        .card { background-color: #2d2d2d !important; color: white; }
+        .subtitulo { color: #aaa !important; }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 15px;
+    }
+
+    .card {
+        background: white;
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+    }
+
+    h2 { color: var(--dya-red); margin-top: 0; font-size: 1.8em; }
+    .subtitulo { color: #666; margin-bottom: 25px; font-size: 1em; line-height: 1.4; }
+
+    .btn-profile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+        margin: 12px 0;
+        border: none;
+        border-radius: 18px;
+        font-size: 1.2em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-profile:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+    .btn-profile:active { transform: scale(0.97); }
+
+    .kids { background-color: var(--kids-color); color: #333; }
+    .adults { background-color: var(--dya-red); }
+    .seniors { background-color: var(--senior-color); }
+
+    .btn-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .descripcion-btn {
+        font-size: 0.65em;
+        font-weight: normal;
+        margin-top: 4px;
+        opacity: 0.9;
+    }
+
+    .lang-switch {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+    }
+</style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 id="title">¿Cómo quieres ayudar?</h2>
+        <p id="subtitle" class="subtitulo">Selecciona tu perfil para adaptar el formulario</p>
+
+        <a href="formulario_kids.html" class="btn-profile kids">
+             <div class="btn-content">
+                <span id="btn-kids">Versión Niños</span>
+                <span class="descripcion-btn" id="desc-kids">¡Para que los más pequeños también ayuden!</span>
+             </div>
+        </a>
+
+        <a href="formulario.html" class="btn-profile adults">
+             <div class="btn-content">
+                <span id="btn-adults">Versión Adultos</span>
+                <span class="descripcion-btn" id="desc-adults">Uso estándar para ciudadanos</span>
+             </div>
+        </a>
+
+        <a href="formulario_seniors.html" class="btn-profile seniors">
+             <div class="btn-content">
+                <span id="btn-seniors">Versión Mayores</span>
+                <span class="descripcion-btn" id="desc-seniors">Letra más grande y opciones simplificadas</span>
+             </div>
+        </a>
+
+        <div class="lang-switch">
+            <label for="lang" style="margin-right: 10px;">Language:</label>
+            <select id="lang" onchange="changeLanguage()">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            es: {
+                title: "¿Cómo quieres ayudar?",
+                subtitle: "Selecciona tu perfil para adaptar el formulario",
+                kids: "Versión Niños",
+                kids_desc: "¡Para que los más pequeños también ayuden!",
+                adults: "Versión Adultos",
+                adults_desc: "Uso estándar para ciudadanos",
+                seniors: "Versión Mayores",
+                seniors_desc: "Letra más grande y opciones simplificadas"
+            },
+            en: {
+                title: "How do you want to help?",
+                subtitle: "Select your profile to adapt the form",
+                kids: "Kids Version",
+                kids_desc: "So the little ones can help too!",
+                adults: "Adults Version",
+                adults_desc: "Standard use for citizens",
+                seniors: "Seniors Version",
+                seniors_desc: "Larger text and simplified options"
+            }
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('lang').value;
+            const t = translations[lang];
+
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('subtitle').innerText = t.subtitle;
+            document.getElementById('btn-kids').innerText = t.kids;
+            document.getElementById('desc-kids').innerText = t.kids_desc;
+            document.getElementById('btn-adults').innerText = t.adults;
+            document.getElementById('desc-adults').innerText = t.adults_desc;
+            document.getElementById('btn-seniors').innerText = t.seniors;
+            document.getElementById('desc-seniors').innerText = t.seniors_desc;
+            
+            localStorage.setItem('selectedLang', lang);
+        }
+    </script>
+</body>
+</html>

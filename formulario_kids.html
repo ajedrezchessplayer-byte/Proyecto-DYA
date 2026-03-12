@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYA Niños - ¡Misión Ayuda!</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', 'Comic Sans MS', sans-serif; 
+            padding: 20px; 
+            max-width: 1000px; 
+            margin: auto; 
+            background-color: #fff9e6; /* Fondo amarillo clarito */
+            color: #333;
+        }
+        h2 { color: #e60000; text-align: center; font-size: 2em; }
+        .subtitulo { text-align: center; margin-bottom: 30px; color: #555; font-weight: bold; }
+        
+        #formulario-dya {
+            background-color: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
+            border: 4px solid #ffcf2d;
+        }
+        .campo { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 1.1em; color: #d48806; }
+        
+        select, textarea, input { 
+            width: 100%; padding: 12px; border: 2px solid #ffcf2d; 
+            border-radius: 12px; box-sizing: border-box; font-size: 1em;
+        }
+        
+        button { 
+            background-color: #e60000; color: white; border: none; 
+            padding: 20px; width: 100%; font-size: 1.3em; font-weight: bold; 
+            border-radius: 15px; cursor: pointer; margin-top: 20px;
+            box-shadow: 0px 5px 0px #b30000; transition: 0.2s;
+        }
+        button:active { transform: translateY(4px); box-shadow: 0px 1px 0px #b30000; }
+        
+        .btn-gps { background-color: #28a745; box-shadow: 0px 5px 0px #1e7e34; font-size: 1em; }
+        
+        #map { height: 300px; border-radius: 20px; border: 3px solid #ffcf2d; z-index: 1; }
+
+        @media (min-width: 768px) {
+            .contenedor-flexible { display: flex; gap: 30px; }
+            .columna-izq, .columna-der { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>¡Ayuda a las personas sin casa!</h2>
+    <p class="subtitulo">¡Hola héroe! Ayúdanos a avisar a la DYA</p>
+
+    <form id="formulario-dya">
+        <div class="contenedor-flexible">
+            <div class="columna-izq">
+                <div class="campo">
+                    <label for="necesidad">¿Qué necesita?</label>
+                    <select id="necesidad" name="necesidad">
+                        <option value="comida">Comida o agua</option>
+                        <option value="abrigo">Ropa o mantas</option>
+                        <option value="sanitario">Un médico (DYA)</option>
+                        <option value="perro">Comida para su mascota</option>
+                        <option value="otro">Otras cosas</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="num_personas">¿Cuántas personas ves?</label>
+                    <input type="number" id="num_personas" name="num_personas" min="1" max="5" value="1">
+                </div>
+
+                <div class="campo">
+                    <label for="descripcion">¿Cómo es? (Ropa...)</label>
+                    <textarea id="descripcion" name="descripcion" rows="3" placeholder="Lleva una camiseta y está sentado..."></textarea>
+                </div>
+            </div>
+
+            <div class="columna-der">
+                <div class="campo">
+                    <label>¿Dónde está? (Toca el mapa)</label>
+                    <div id="map"></div>
+                    <button type="button" class="btn-gps" onclick="usarGPS()">¡Estoy aquí!</button>
+                    <input type="hidden" id="latitud" name="latitud">
+                    <input type="hidden" id="longitud" name="longitud">
+                    <input type="hidden" id="ip_remota" name="ip_remota">
+                    <input type="hidden" id="perfil" name="perfil" value="kids">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="btn-enviar">🚀 ¡Enviar aviso!</button>
+    </form>
+
+    <script>
+        // Captura IP para seguridad
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => { document.getElementById('ip_remota').value = data.ip; });
+
+        // Mapa de la misión
+        var map = L.map('map').setView([39.476, -6.372], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var marker = L.marker([39.476, -6.372], {draggable: true}).addTo(map);
+
+        function actualizarCoordenadas(lat, lng) {
+            document.getElementById('latitud').value = lat.toFixed(6);
+            document.getElementById('longitud').value = lng.toFixed(6);
+        }
+        actualizarCoordenadas(39.476, -6.372);
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            actualizarCoordenadas(e.latlng.lat, e.latlng.lng);
+        });
+
+        function usarGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(p) {
+                    var lat = p.coords.latitude;
+                    var lng = p.coords.longitude;
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 17);
+                    actualizarCoordenadas(lat, lng);
+                });
+            }
+        }
+
+        // Envío del reporte
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
+        const form = document.getElementById('formulario-dya');
+        const btnEnviar = document.getElementById('btn-enviar');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            btnEnviar.disabled = true;
+            btnEnviar.innerText = "🚀 ¡Enviando misión!";
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
+                .then(() => {
+                    alert("¡Misión cumplida! Gracias por ayudar.");
+                    window.location.href = "index.html";
+                })
+                .catch(() => {
+                    alert("¡Uy! Algo ha fallado. Prueba otra vez.");
+                    btnEnviar.disabled = false;
+                });
+        });
+    </script>
+</body>
+</html>
