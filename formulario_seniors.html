@@ -8,6 +8,28 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        /* Estilos para el indicador de carga (spinner) */
+.spinner {
+    display: none; /* Empieza escondido */
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Ajuste para que el botón albergue el spinner y el texto alineados */
+#btn-enviar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
             padding: 20px; 
@@ -145,7 +167,10 @@
             Gracias por ayudar a quienes más lo necesitan.
         </div>
 
-        <button type="submit" id="btn-enviar">ENVIAR AVISO A DYA</button>
+        <button type="submit" id="btn-enviar">
+    <span class="spinner" id="spinner"></span>
+    <span id="btn-text">ENVIAR AVISO A DYA</span> 
+</button>
     </form>
 
     <script>
@@ -186,23 +211,32 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
         const form = document.getElementById('formulario-dya');
         const btnEnviar = document.getElementById('btn-enviar');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btn-text');
 
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            btnEnviar.disabled = true;
-            btnEnviar.innerText = "Enviando información...";
+form.addEventListener('submit', e => {
+    e.preventDefault();
 
-            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
-                .then(() => {
-                    alert("¡Gracias! Su aviso ha sido recibido correctamente.");
-                    window.location.href = "index.html";
-                })
-                .catch(() => {
-                    alert("Error al enviar. Inténtelo de nuevo.");
-                    btnEnviar.disabled = false;
-                });
+    // 1. Bloqueamos botón y mostramos carga
+    btnEnviar.disabled = true;
+    spinner.style.display = "inline-block"; 
+    btnText.innerText = "Enviando...";
+
+    fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
+        .then(() => {
+            alert("¡Enviado con éxito!");
+            window.location.href = "index.html";
+        })
+        .catch(() => {
+            alert("Error al enviar.");
+            // 2. Si falla, lo reseteamos para poder reintentar
+            btnEnviar.disabled = false;
+            spinner.style.display = "none";
+            btnText.innerText = "Enviar aviso";
         });
+});
     </script>
 </body>
 
 </html>
+
