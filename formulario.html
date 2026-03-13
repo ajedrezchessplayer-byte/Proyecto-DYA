@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            padding: 20px; 
-            max-width: 1000px; 
-            margin: auto; 
-            background-color: #f0f2f5; 
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+            background-color: #f0f2f5;
             color: #333;
         }
         h2 { color: #e60000; text-align: center; }
@@ -26,16 +26,16 @@
         .campo { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
         select, textarea, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { 
-            background-color: #e60000; 
-            color: white; 
-            border: none; 
-            padding: 15px; 
-            width: 100%; 
-            font-size: 1.1em; 
-            font-weight: bold; 
-            border-radius: 8px; 
-            cursor: pointer; 
+        button {
+            background-color: #e60000;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
             margin-top: 20px;
             transition: 0.3s;
         }
@@ -48,6 +48,30 @@
             .columna-izq, .columna-der { flex: 1; }
         }
         #map { height: 350px; border-radius: 10px; border: 2px solid #eee; z-index: 1; }
+        /* Estilo del Spinner */
+.spinner {
+    display: none; /* Oculto por defecto */
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Estado cuando el botón está enviando */
+button:disabled {
+    background-color: #999 !important;
+    cursor: not-allowed;
+}
+
     </style>
 </head>
 <body>
@@ -124,7 +148,11 @@
             <b>Aviso de seguridad:</b> Para evitar reportes falsos, se registrará la dirección IP del dispositivo. El uso indebido de esta interfaz será notificado a la policía.
         </p>
 
-        <button type="submit" id="btn-enviar">Enviar reporte a DYA</button>
+        <button type="submit" id="btn-enviar">
+    <span id="spinner" class="spinner" style="display: none;"></span>
+    <span id="btn-text">Enviar reporte a DYA</span>
+</button>
+
     </form>
 
     <script>
@@ -166,31 +194,44 @@
             }
         }
 
-        // --- ENVÍO ---
-        // URL Corregida (comilla cerrada)
+        // --- ENVÍO CON SPINNER ---
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
         const form = document.getElementById('formulario-dya');
         const btnEnviar = document.getElementById('btn-enviar');
 
         form.addEventListener('submit', e => {
             e.preventDefault();
+           
+            // 1. Elementos visuales del botón (asegúrate de haber modificado el HTML del botón también)
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btn-text');
+
+            // 2. Activar estado de "Enviando"
             btnEnviar.disabled = true;
-            btnEnviar.innerText = "Enviando...";
+            if (spinner) spinner.style.display = 'inline-block';
+            if (btnText) btnText.innerText = " Enviando...";
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
                 .then(() => {
                     alert("¡Reporte enviado! Gracias por tu colaboración.");
-                    btnEnviar.disabled = false;
-                    btnEnviar.innerText = "Enviar reporte a DYA";
+                   
+                    // 3. Resetear formulario y mapa
                     form.reset();
                     marker.setLatLng([39.476, -6.372]);
                     actualizarCoordenadas(39.476, -6.372);
                 })
                 .catch(error => {
-                    alert("Error en el envío.");
+                    console.error('Error!', error.message);
+                    alert("Error en el envío. Por favor, inténtalo de nuevo.");
+                })
+                .finally(() => {
+                    // 4. Restaurar el botón siempre (aunque falle o funcione)
                     btnEnviar.disabled = false;
+                    if (spinner) spinner.style.display = 'none';
+                    if (btnText) btnText.innerText = "Enviar reporte a DYA";
                 });
         });
+
     </script>
 </body>
 
