@@ -14,6 +14,7 @@
             margin: auto;
             background-color: #f0f2f5;
             color: #333;
+            transition: background-color 0.3s, color 0.3s;
         }
         h2 { color: #e60000; text-align: center; }
         .subtitulo { text-align: center; margin-bottom: 30px; color: #666; }
@@ -26,7 +27,26 @@
         .campo { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
         select, textarea, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button {
+        
+        .controles-superiores {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-interfaz {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.3s;
+        }
+
+        button[type="submit"] {
             background-color: #e60000;
             color: white;
             border: none;
@@ -38,9 +58,13 @@
             cursor: pointer;
             margin-top: 20px;
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:hover { background-color: #c40000; }
-        .btn-gps { background-color: #28a745; margin-top: 10px; padding: 10px; font-size: 0.9em; }
+        button[type="submit"]:hover { background-color: #c40000; }
+        
+        .btn-gps { background-color: #28a745; margin-top: 10px; padding: 10px; font-size: 0.9em; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%; }
         .aviso-legal { font-size: 0.75em; color: #888; margin-top: 20px; line-height: 1.4; text-align: center; }
 
         @media (min-width: 768px) {
@@ -48,248 +72,249 @@
             .columna-izq, .columna-der { flex: 1; }
         }
         #map { height: 350px; border-radius: 10px; border: 2px solid #eee; z-index: 1; }
-        /* Estilo del Spinner */
-.spinner {
-    display: none; /* Oculto por defecto */
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    margin-right: 10px;
-    vertical-align: middle;
-}
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Estado cuando el botón está enviando */
-button:disabled {
-    background-color: #999 !important;
-    cursor: not-allowed;
-}
-/* --- MODO OSCURO --- */
-body.dark-mode {
-    background-color: #1a1a1a;
-    color: #e4e6eb;
-}
+        button:disabled { background-color: #999 !important; cursor: not-allowed; }
 
-body.dark-mode #formulario-dya {
-    background-color: #242526;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
-}
-
-body.dark-mode label, 
-body.dark-mode .subtitulo {
-    color: #b0b3b8;
-}
-
-body.dark-mode input, 
-body.dark-mode select, 
-body.dark-mode textarea {
-    background-color: #3a3b3c;
-    color: #e4e6eb;
-    border: 1px solid #555;
-}
-
-/* Estilo para el botón interruptor */
-.btn-theme {
-    background-color: #333;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    display: block;
-    margin: 0 auto 20px auto;
-    width: fit-content;
-    font-size: 0.9em;
-    transition: 0.3s;
-}
-
-body.dark-mode .btn-theme {
-    background-color: #e4e6eb;
-    color: #1a1a1a;
-}
+        /* MODO OSCURO */
+        body.dark-mode { background-color: #1a1a1a; color: #e4e6eb; }
+        body.dark-mode #formulario-dya { background-color: #242526; box-shadow: 0px 10px 25px rgba(0,0,0,0.5); }
+        body.dark-mode label, body.dark-mode .subtitulo { color: #b0b3b8; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #3a3b3c; color: #e4e6eb; border: 1px solid #555; }
+        body.dark-mode .btn-interfaz { background-color: #e4e6eb; color: #1a1a1a; }
     </style>
 </head>
 <body>
-<button type="button" id="btn-theme" class="btn-theme">Modo Oscuro</button>
-    <h2>Aviso de Persona sin Hogar</h2>
-    <p class="subtitulo">Proyecto Vedruna en colaboración con DYA Cáceres</p>
+
+    <div class="controles-superiores">
+        <button type="button" id="btn-lang" class="btn-interfaz">🇬🇧 English</button>
+        <button type="button" id="btn-theme" class="btn-interfaz">Modo Oscuro/Night Mode</button>
+    </div>
+
+    <h2 id="txt-titulo">Aviso de Persona sin Hogar</h2>
+    <p class="subtitulo" id="txt-subtitulo">Proyecto Vedruna en colaboración con DYA Cáceres</p>
 
     <form id="formulario-dya">
         <div class="contenedor-flexible">
             <div class="columna-izq">
                 <div class="campo">
-                    <label for="necesidad">¿Qué necesita principalmente?</label>
+                    <label id="lbl-necesidad" for="necesidad">¿Qué necesita principalmente?</label>
                     <select id="necesidad" name="necesidad">
-                        <option value="comida">Alimentos/Bebida</option>
-                        <option value="abrigo">Ropa o mantas</option>
-                        <option value="sanitario">Atención sanitaria</option>
-                        <option value="albergue">Traslado a albergue</option>
-                        <option value="otro">Otros (especificar abajo)</option>
+                        <option id="opt-comida" value="comida">Alimentos/Bebida</option>
+                        <option id="opt-abrigo" value="abrigo">Ropa o mantas</option>
+                        <option id="opt-sanitario" value="sanitario">Atención sanitaria</option>
+                        <option id="opt-albergue" value="albergue">Traslado a albergue</option>
+                        <option id="opt-otro" value="otro">Otros (especificar abajo)</option>
                     </select>
                 </div>
 
                 <div class="campo">
-                    <label for="urgencia">Nivel de urgencia:</label>
+                    <label id="lbl-urgencia" for="urgencia">Nivel de urgencia:</label>
                     <select id="urgencia" name="urgencia">
-                        <option value="baja">Baja (Solo información)</option>
-                        <option value="media">Media (Necesita atención hoy)</option>
-                        <option value="alta">Alta (Situación crítica)</option>
+                        <option id="opt-baja" value="baja">Baja (Solo información)</option>
+                        <option id="opt-media" value="media">Media (Necesita atención hoy)</option>
+                        <option id="opt-alta" value="alta">Alta (Situación crítica)</option>
                     </select>
                 </div>
 
                 <div class="campo">
-                    <label for="num_personas">Número de Personas:</label>
+                    <label id="lbl-personas" for="num_personas">Número de Personas:</label>
                     <input type="number" id="num_personas" name="num_personas" min="1" max="5" value="1">
                 </div>
 
                 <div class="campo">
-                    <label for="menores">¿Hay presencia de menores?</label>
+                    <label id="lbl-menores" for="menores">¿Hay presencia de menores?</label>
                     <select id="menores" name="menores">
-                        <option value="no">No se ven menores</option>
-                        <option value="si">Sí, hay menores presentes</option>
-                        <option value="duda">No estoy seguro/a</option>
+                        <option id="opt-m-no" value="no">No se ven menores</option>
+                        <option id="opt-m-si" value="si">Sí, hay menores presentes</option>
+                        <option id="opt-m-duda" value="duda">No estoy seguro/a</option>
                     </select>
                 </div>
 
                 <div class="campo">
-                    <label for="horario">¿Cuándo suele estar en este punto?</label>
+                    <label id="lbl-horario" for="horario">¿Cuándo suele estar en este punto?</label>
                     <select id="horario" name="horario">
-                        <option value="ahora">Lo estoy viendo ahora mismo</option>
-                        <option value="mañana">Suele estar por las mañanas</option>
-                        <option value="tarde">Suele estar por las tardes</option>
-                        <option value="noche">Suele estar por las noches</option>
+                        <option id="opt-h-ahora" value="ahora">Lo estoy viendo ahora mismo</option>
+                        <option id="opt-h-manana" value="mañana">Suele estar por las mañanas</option>
+                        <option id="opt-h-tarde" value="tarde">Suele estar por las tardes</option>
+                        <option id="opt-h-noche" value="noche">Suele estar por las noches</option>
                     </select>
                 </div>
             </div>
 
             <div class="columna-der">
                 <div class="campo">
-                    <label>Tu ubicación (Pulsa el mapa o usa el GPS):</label>
+                    <label id="lbl-ubicacion">Tu ubicación (Pulsa el mapa o usa el GPS):</label>
                     <div id="map"></div>
-                    <button type="button" class="btn-gps" onclick="usarGPS()">Usar mi ubicación GPS actual</button>
+                    <button type="button" id="btn-gps-txt" class="btn-gps" onclick="usarGPS()">Usar mi ubicación GPS actual</button>
                     <input type="hidden" id="latitud" name="latitud">
                     <input type="hidden" id="longitud" name="longitud">
                     <input type="hidden" id="ip_remota" name="ip_remota" value="Detectando...">
                 </div>
 
                 <div class="campo">
-                    <label for="descripcion">Descripción física (Indica aquí si tiene mascota o si puede acceder una ambulancia):</label>
+                    <label id="lbl-descripcion" for="descripcion">Descripción física:</label>
                     <textarea id="descripcion" name="descripcion" rows="3" placeholder="Hombre/Mujer, ... años, ropa clara/oscura..."></textarea>
                 </div>
             </div>
         </div>
 
-        <p class="aviso-legal">
-            <b>Aviso de seguridad:</b> Para evitar reportes falsos, se registrará la dirección IP del dispositivo. El uso indebido de esta interfaz será notificado a la policía.
+        <p class="aviso-legal" id="txt-aviso">
+            <b>Aviso de seguridad:</b> Para evitar reportes falsos, se registrará la dirección IP del dispositivo.
         </p>
 
         <button type="submit" id="btn-enviar">
-    <span id="spinner" class="spinner" style="display: none;"></span>
-    <span id="btn-text">Enviar reporte a DYA</span>
-</button>
-
+            <span id="spinner" class="spinner"></span>
+            <span id="btn-text">Enviar reporte a DYA</span>
+        </button>
     </form>
 
     <script>
-        // --- CAPTURA DE IP ---
-        fetch('https://api.ipify.org?format=json')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('ip_remota').value = data.ip;
-                console.log("IP Lista: " + data.ip);
-            })
-            .catch(() => { document.getElementById('ip_remota').value = "IP no disponible"; });
+        let idiomaActual = 'es';
+        const traducciones = {
+            'en': {
+                'titulo': 'Homeless Person Report',
+                'subtitulo': 'Vedruna Project & DYA Cáceres',
+                'nec': 'Main need:',
+                'urg': 'Urgency level:',
+                'per': 'Number of people:',
+                'men': 'Are there minors?',
+                'hor': 'Usual schedule:',
+                'ubi': 'Location (Tap map or use GPS):',
+                'gps': 'Use my current GPS location',
+                'desc': 'Physical description:',
+                'aviso': '<b>Security Alert:</b> IP address is recorded to prevent false reports.',
+                'enviar': 'Send report to DYA',
+                'enviando': ' Sending...',
+                'exito': 'Report sent! Thank you.',
+                'btnLang': '🇪🇸 Español',
+                'placeholder': 'Man/Woman, approx. age, clothing...',
+                // Opciones del select
+                'c1': 'Food/Drink', 'c2': 'Clothing/Blankets', 'c3': 'Medical attention', 'c4': 'Shelter transfer', 'c5': 'Others (specify below)',
+                'u1': 'Low (Info only)', 'u2': 'Medium (Needs attention today)', 'u3': 'High (Critical situation)',
+                'm1': 'No minors visible', 'm2': 'Yes, minors present', 'm3': 'Not sure',
+                'h1': 'I am seeing them right now', 'h2': 'Usually here in the mornings', 'h3': 'Usually here in the afternoons', 'h4': 'Usually here at night'
+            },
+            'es': {
+                'titulo': 'Aviso de Persona sin Hogar',
+                'subtitulo': 'Proyecto Vedruna en colaboración con DYA Cáceres',
+                'nec': '¿Qué necesita principalmente?',
+                'urg': 'Nivel de urgencia:',
+                'per': 'Número de Personas:',
+                'men': '¿Hay presencia de menores?',
+                'hor': '¿Cuándo suele estar en este punto?',
+                'ubi': 'Tu ubicación (Pulsa el mapa o usa el GPS):',
+                'gps': 'Usar mi ubicación GPS actual',
+                'desc': 'Descripción física:',
+                'aviso': '<b>Aviso de seguridad:</b> Para evitar reportes falsos, se registrará la dirección IP del dispositivo.',
+                'enviar': 'Enviar reporte a DYA',
+                'enviando': ' Enviando...',
+                'exito': '¡Reporte enviado! Gracias.',
+                'btnLang': '🇬🇧 English',
+                'placeholder': 'Hombre/Mujer, ... años, ropa clara/oscura...',
+                'c1': 'Alimentos/Bebida', 'c2': 'Ropa o mantas', 'c3': 'Atención sanitaria', 'c4': 'Traslado a albergue', 'c5': 'Otros (especificar abajo)',
+                'u1': 'Baja (Solo información)', 'u2': 'Media (Necesita atención hoy)', 'u3': 'Alta (Situación crítica)',
+                'm1': 'No se ven menores', 'm2': 'Sí, hay menores presentes', 'm3': 'No estoy seguro/a',
+                'h1': 'Lo estoy viendo ahora mismo', 'h2': 'Suele estar por las mañanas', 'h3': 'Suele estar por las tardes', 'h4': 'Suele estar por las noches'
+            }
+        };
 
-        // --- CONFIGURACIÓN MAPA ---
+        const btnLang = document.getElementById('btn-lang');
+        btnLang.addEventListener('click', () => {
+            idiomaActual = idiomaActual === 'es' ? 'en' : 'es';
+            const t = traducciones[idiomaActual];
+            
+            document.getElementById('txt-titulo').innerText = t.titulo;
+            document.getElementById('txt-subtitulo').innerText = t.subtitulo;
+            document.getElementById('lbl-necesidad').innerText = t.nec;
+            document.getElementById('lbl-urgencia').innerText = t.urg;
+            document.getElementById('lbl-personas').innerText = t.per;
+            document.getElementById('lbl-menores').innerText = t.men;
+            document.getElementById('lbl-horario').innerText = t.hor;
+            document.getElementById('lbl-ubicacion').innerText = t.ubi;
+            document.getElementById('btn-gps-txt').innerText = t.gps;
+            document.getElementById('lbl-descripcion').innerText = t.desc;
+            document.getElementById('descripcion').placeholder = t.placeholder;
+            document.getElementById('txt-aviso').innerHTML = t.aviso;
+            document.getElementById('btn-text').innerText = t.enviar;
+            btnLang.innerText = t.btnLang;
+
+            // Traducción de opciones
+            document.getElementById('opt-comida').innerText = t.c1;
+            document.getElementById('opt-abrigo').innerText = t.c2;
+            document.getElementById('opt-sanitario').innerText = t.c3;
+            document.getElementById('opt-albergue').innerText = t.c4;
+            document.getElementById('opt-otro').innerText = t.c5;
+            document.getElementById('opt-baja').innerText = t.u1;
+            document.getElementById('opt-media').innerText = t.u2;
+            document.getElementById('opt-alta').innerText = t.u3;
+            document.getElementById('opt-m-no').innerText = t.m1;
+            document.getElementById('opt-m-si').innerText = t.m2;
+            document.getElementById('opt-m-duda').innerText = t.m3;
+            document.getElementById('opt-h-ahora').innerText = t.h1;
+            document.getElementById('opt-h-manana').innerText = t.h2;
+            document.getElementById('opt-h-tarde').innerText = t.h3;
+            document.getElementById('opt-h-noche').innerText = t.h4;
+        });
+
+        // --- MODO OSCURO ---
+        const btnTheme = document.getElementById('btn-theme');
+        btnTheme.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            btnTheme.innerText = document.body.classList.contains('dark-mode') ? "Modo Claro/Day Mode" : "Modo Oscuro/Night Mode";
+        });
+
+        // --- IP ---
+        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => { document.getElementById('ip_remota').value = data.ip; });
+
+        // --- MAPA ---
         var map = L.map('map').setView([39.476, -6.372], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         var marker = L.marker([39.476, -6.372], {draggable: true}).addTo(map);
-
         function actualizarCoordenadas(lat, lng) {
             document.getElementById('latitud').value = parseFloat(lat).toFixed(6);
             document.getElementById('longitud').value = parseFloat(lng).toFixed(6);
         }
-
         actualizarCoordenadas(39.476, -6.372);
-
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            actualizarCoordenadas(e.latlng.lat, e.latlng.lng);
-        });
+        map.on('click', function(e) { marker.setLatLng(e.latlng); actualizarCoordenadas(e.latlng.lat, e.latlng.lng); });
 
         function usarGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(p) {
-                    var lat = p.coords.latitude;
-                    var lng = p.coords.longitude;
-                    marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 17);
-                    actualizarCoordenadas(lat, lng);
-                }, function() { alert("GPS no disponible"); });
+                    var lat = p.coords.latitude, lng = p.coords.longitude;
+                    marker.setLatLng([lat, lng]); map.setView([lat, lng], 17); actualizarCoordenadas(lat, lng);
+                }, function() { alert("GPS Error"); });
             }
         }
 
-        // --- ENVÍO CON SPINNER ---
+        // --- ENVÍO ---
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
         const form = document.getElementById('formulario-dya');
-        const btnEnviar = document.getElementById('btn-enviar');
-
         form.addEventListener('submit', e => {
             e.preventDefault();
-           
-            // 1. Elementos visuales del botón (asegúrate de haber modificado el HTML del botón también)
-            const spinner = document.getElementById('spinner');
-            const btnText = document.getElementById('btn-text');
-
-            // 2. Activar estado de "Enviando"
-            btnEnviar.disabled = true;
-            if (spinner) spinner.style.display = 'inline-block';
-            if (btnText) btnText.innerText = " Enviando...";
+            const btnEnviar = document.getElementById('btn-enviar'), spinner = document.getElementById('spinner'), btnText = document.getElementById('btn-text');
+            btnEnviar.disabled = true; spinner.style.display = 'inline-block'; btnText.innerText = traducciones[idiomaActual].enviando;
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
                 .then(() => {
-                    alert("¡Reporte enviado! Gracias por tu colaboración.");
-                   
-                    // 3. Resetear formulario y mapa
-                    form.reset();
-                    marker.setLatLng([39.476, -6.372]);
-                    actualizarCoordenadas(39.476, -6.372);
-                })
-                .catch(error => {
-                    console.error('Error!', error.message);
-                    alert("Error en el envío. Por favor, inténtalo de nuevo.");
+                    alert(traducciones[idiomaActual].exito);
+                    form.reset(); marker.setLatLng([39.476, -6.372]); actualizarCoordenadas(39.476, -6.372);
                 })
                 .finally(() => {
-                    // 4. Restaurar el botón siempre (aunque falle o funcione)
-                    btnEnviar.disabled = false;
-                    if (spinner) spinner.style.display = 'none';
-                    if (btnText) btnText.innerText = "Enviar reporte a DYA";
+                    btnEnviar.disabled = false; spinner.style.display = 'none'; btnText.innerText = traducciones[idiomaActual].enviar;
                 });
         });
-// --- MODO OSCURO ---
-const btnTheme = document.getElementById('btn-theme');
-
-btnTheme.addEventListener('click', () => {
-    // Ponemos o quitamos la clase 'dark-mode' al body
-    document.body.classList.toggle('dark-mode');
-    
-    // Cambiamos el texto y el icono del botón
-    if (document.body.classList.contains('dark-mode')) {
-        btnTheme.innerText = "Modo Claro";
-    } else {
-        btnTheme.innerText = "Modo Oscuro";
-    }
-});
     </script>
 </body>
-
 </html>
-
-
-
