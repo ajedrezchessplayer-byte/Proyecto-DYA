@@ -70,11 +70,53 @@ button:disabled {
     background-color: #999 !important;
     cursor: not-allowed;
 }
+/* --- MODO OSCURO --- */
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #e4e6eb;
+}
 
+body.dark-mode #formulario-dya {
+    background-color: #242526;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
+}
+
+body.dark-mode label, 
+body.dark-mode .subtitulo {
+    color: #b0b3b8;
+}
+
+body.dark-mode input, 
+body.dark-mode select, 
+body.dark-mode textarea {
+    background-color: #3a3b3c;
+    color: #e4e6eb;
+    border: 1px solid #555;
+}
+
+/* Estilo para el botón interruptor */
+.btn-theme {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto 20px auto;
+    width: fit-content;
+    font-size: 0.9em;
+    transition: 0.3s;
+}
+
+body.dark-mode .btn-theme {
+    background-color: #e4e6eb;
+    color: #1a1a1a;
+}
     </style>
 </head>
 <body>
-
+<button type="button" id="btn-theme" class="btn-theme">🌙 Modo Oscuro</button>
     <h2>Aviso de Persona sin Hogar</h2>
     <p class="subtitulo">Proyecto Vedruna en colaboración con DYA Cáceres</p>
 
@@ -230,9 +272,23 @@ button:disabled {
                     if (btnText) btnText.innerText = "Enviar reporte a DYA";
                 });
         });
+// --- MODO OSCURO ---
+const btnTheme = document.getElementById('btn-theme');
 
+btnTheme.addEventListener('click', () => {
+    // Ponemos o quitamos la clase 'dark-mode' al body
+    document.body.classList.toggle('dark-mode');
+    
+    // Cambiamos el texto y el icono del botón
+    if (document.body.classList.contains('dark-mode')) {
+        btnTheme.innerText = "☀️ Modo Claro";
+    } else {
+        btnTheme.innerText = "🌙 Modo Oscuro";
+    }
+});
     </script>
 </body>
 
 </html>
+
 
