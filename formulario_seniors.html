@@ -207,20 +207,21 @@
             }
         }
 
-        // Envío
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
-        const form = document.getElementById('formulario-dya');
-        const btnEnviar = document.getElementById('btn-enviar');
-        const spinner = document.getElementById('spinner');
-        const btnText = document.getElementById('btn-text');
+       // --- ENVÍO ---
+const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
+const form = document.getElementById('formulario-dya');
+const btnEnviar = document.getElementById('btn-enviar');
+// IMPORTANTE: Definir estas dos variables aquí fuera:
+const spinner = document.getElementById('spinner');
+const btnText = document.getElementById('btn-text');
 
 form.addEventListener('submit', e => {
     e.preventDefault();
 
-    // 1. Bloqueamos botón y mostramos carga
+    // Bloqueamos botón y mostramos carga
     btnEnviar.disabled = true;
-    spinner.style.display = "inline-block"; 
-    btnText.innerText = "Enviando...";
+    if (spinner) spinner.style.display = "inline-block"; 
+    if (btnText) btnText.innerText = "Enviando...";
 
     fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
         .then(() => {
@@ -229,14 +230,14 @@ form.addEventListener('submit', e => {
         })
         .catch(() => {
             alert("Error al enviar.");
-            // 2. Si falla, lo reseteamos para poder reintentar
             btnEnviar.disabled = false;
-            spinner.style.display = "none";
-            btnText.innerText = "Enviar aviso";
+            if (spinner) spinner.style.display = "none";
+            if (btnText) btnText.innerText = "ENVIAR AVISO A DYA";
         });
 });
     </script>
 </body>
 
 </html>
+
 
