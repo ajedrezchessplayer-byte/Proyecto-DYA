@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,39 +7,35 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* Estilos para el indicador de carga (spinner) */
-.spinner {
-    display: none; /* Empieza escondido */
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Ajuste para que el botón albergue el spinner y el texto alineados */
-#btn-enviar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
+        /* Estilos generales */
         body { 
             font-family: 'Segoe UI', 'Comic Sans MS', sans-serif; 
             padding: 20px; 
             max-width: 1000px; 
             margin: auto; 
-            background-color: #fff9e6; /* Fondo amarillo clarito */
+            background-color: #fff9e6; 
             color: #333;
         }
-        h2 { color: #e60000; text-align: center; font-size: 2em; }
+        h2 { color: #e60000; text-align: center; font-size: 2em; margin-top: 10px; }
         .subtitulo { text-align: center; margin-bottom: 30px; color: #555; font-weight: bold; }
         
+        /* Contenedor de botones superiores */
+        .controles-superiores {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .btn-idioma {
+            background-color: #ffcf2d;
+            color: #d48806;
+            border: 2px solid #d48806;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
         #formulario-dya {
             background-color: white;
             padding: 30px;
@@ -56,15 +51,16 @@
             border-radius: 12px; box-sizing: border-box; font-size: 1em;
         }
         
-        button { 
+        button#btn-enviar { 
             background-color: #e60000; color: white; border: none; 
             padding: 20px; width: 100%; font-size: 1.3em; font-weight: bold; 
             border-radius: 15px; cursor: pointer; margin-top: 20px;
             box-shadow: 0px 5px 0px #b30000; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        button:active { transform: translateY(4px); box-shadow: 0px 1px 0px #b30000; }
+        button#btn-enviar:active { transform: translateY(4px); box-shadow: 0px 1px 0px #b30000; }
         
-        .btn-gps { background-color: #28a745; box-shadow: 0px 5px 0px #1e7e34; font-size: 1em; }
+        .btn-gps { background-color: #28a745; box-shadow: 0px 5px 0px #1e7e34; font-size: 1em; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px;}
         
         #map { height: 300px; border-radius: 20px; border: 3px solid #ffcf2d; z-index: 1; }
 
@@ -72,43 +68,57 @@
             .contenedor-flexible { display: flex; gap: 30px; }
             .columna-izq, .columna-der { flex: 1; }
         }
+
+        .spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <h2>¡Ayuda a las personas sin casa!</h2>
-    <p class="subtitulo">¡Hola héroe! Ayúdanos a avisar a la DYA</p>
+    <div class="controles-superiores">
+        <button type="button" id="btn-lang" class="btn-idioma">🇬🇧 English</button>
+    </div>
+
+    <h2 id="txt-titulo">¡Ayuda a las personas sin casa!</h2>
+    <p class="subtitulo" id="txt-subtitulo">¡Hola héroe! Ayúdanos a avisar a la DYA</p>
 
     <form id="formulario-dya">
         <div class="contenedor-flexible">
             <div class="columna-izq">
                 <div class="campo">
-                    <label for="necesidad">¿Qué necesita?</label>
+                    <label id="lbl-necesidad" for="necesidad">¿Qué necesita?</label>
                     <select id="necesidad" name="necesidad">
-                        <option value="comida">Comida o agua</option>
-                        <option value="abrigo">Ropa o mantas</option>
-                        <option value="sanitario">Un médico (DYA)</option>
-                        <option value="perro">Comida para su mascota</option>
-                        <option value="otro">Otras cosas</option>
+                        <option id="opt-comida" value="comida">Comida o agua</option>
+                        <option id="opt-abrigo" value="abrigo">Ropa o mantas</option>
+                        <option id="opt-sanitario" value="sanitario">Un médico (DYA)</option>
+                        <option id="opt-perro" value="perro">Comida para su mascota</option>
+                        <option id="opt-otro" value="otro">Otras cosas</option>
                     </select>
                 </div>
 
                 <div class="campo">
-                    <label for="num_personas">¿Cuántas personas ves?</label>
+                    <label id="lbl-personas" for="num_personas">¿Cuántas personas ves?</label>
                     <input type="number" id="num_personas" name="num_personas" min="1" max="5" value="1">
                 </div>
 
                 <div class="campo">
-                    <label for="descripcion">¿Cómo es? (Ropa...)</label>
+                    <label id="lbl-desc" for="descripcion">¿Cómo es? (Ropa...)</label>
                     <textarea id="descripcion" name="descripcion" rows="3" placeholder="Lleva una camiseta y está sentado..."></textarea>
                 </div>
             </div>
 
             <div class="columna-der">
                 <div class="campo">
-                    <label>¿Dónde está? (Toca el mapa)</label>
+                    <label id="lbl-mapa">¿Dónde está? (Toca el mapa)</label>
                     <div id="map"></div>
-                    <button type="button" class="btn-gps" onclick="usarGPS()">¡Estoy aquí!</button>
+                    <button type="button" id="btn-gps-txt" class="btn-gps" onclick="usarGPS()">¡Estoy aquí!</button>
                     <input type="hidden" id="latitud" name="latitud">
                     <input type="hidden" id="longitud" name="longitud">
                     <input type="hidden" id="ip_remota" name="ip_remota">
@@ -117,19 +127,77 @@
             </div>
         </div>
 
-       <button type="submit" id="btn-enviar">
-    <span class="spinner" id="spinner"></span>
-    <span id="btn-text">🚀 ¡Enviar aviso!</span> 
-</button>
+        <button type="submit" id="btn-enviar">
+            <span class="spinner" id="spinner"></span>
+            <span id="btn-text">🚀 ¡Enviar aviso!</span> 
+        </button>
     </form>
 
     <script>
-        // Captura IP para seguridad
-        fetch('https://api.ipify.org?format=json')
-            .then(res => res.json())
-            .then(data => { document.getElementById('ip_remota').value = data.ip; });
+        // --- TRADUCCIONES ---
+        let idiomaActual = 'es';
+        const traducciones = {
+            'en': {
+                'titulo': 'Help people without a home!',
+                'sub': 'Hi hero! Help us alert DYA',
+                'nec': 'What do they need?',
+                'per': 'How many people?',
+                'desc': 'How do they look? (Clothes...)',
+                'map': 'Where are they? (Tap the map)',
+                'gps': "I'm here!",
+                'env': '🚀 Send alert!',
+                'enviando': 'Sending...',
+                'exito': 'Sent successfully!',
+                'error': 'Error sending.',
+                'placeholder': 'They are wearing a t-shirt and sitting...',
+                'btnLang': '🇪🇸 Español',
+                'o1': 'Food or water', 'o2': 'Clothes or blankets', 'o3': 'A doctor (DYA)', 'o4': 'Pet food', 'o5': 'Other things'
+            },
+            'es': {
+                'titulo': '¡Ayuda a las personas sin casa!',
+                'sub': '¡Hola héroe! Ayúdanos a avisar a la DYA',
+                'nec': '¿Qué necesita?',
+                'per': '¿Cuántas personas ves?',
+                'desc': '¿Cómo es? (Ropa...)',
+                'map': '¿Dónde está? (Toca el mapa)',
+                'gps': '¡Estoy aquí!',
+                'env': '🚀 ¡Enviar aviso!',
+                'enviando': 'Enviando...',
+                'exito': '¡Enviado con éxito!',
+                'error': 'Error al enviar.',
+                'placeholder': 'Lleva una camiseta y está sentado...',
+                'btnLang': '🇬🇧 English',
+                'o1': 'Comida o agua', 'o2': 'Ropa o mantas', 'o3': 'Un médico (DYA)', 'o4': 'Comida para su mascota', 'o5': 'Otras cosas'
+            }
+        };
 
-        // Mapa de la misión
+        const btnLang = document.getElementById('btn-lang');
+        btnLang.addEventListener('click', () => {
+            idiomaActual = idiomaActual === 'es' ? 'en' : 'es';
+            const t = traducciones[idiomaActual];
+            
+            document.getElementById('txt-titulo').innerText = t.titulo;
+            document.getElementById('txt-subtitulo').innerText = t.sub;
+            document.getElementById('lbl-necesidad').innerText = t.nec;
+            document.getElementById('lbl-personas').innerText = t.per;
+            document.getElementById('lbl-desc').innerText = t.desc;
+            document.getElementById('descripcion').placeholder = t.placeholder;
+            document.getElementById('lbl-mapa').innerText = t.map;
+            document.getElementById('btn-gps-txt').innerText = t.gps;
+            document.getElementById('btn-text').innerText = t.env;
+            btnLang.innerText = t.btnLang;
+
+            // Opciones del select
+            document.getElementById('opt-comida').innerText = t.o1;
+            document.getElementById('opt-abrigo').innerText = t.o2;
+            document.getElementById('opt-sanitario').innerText = t.o3;
+            document.getElementById('opt-perro').innerText = t.o4;
+            document.getElementById('opt-otro').innerText = t.o5;
+        });
+
+        // --- LÓGICA DE MAPA E IP ---
+        fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => { document.getElementById('ip_remota').value = data.ip; });
+
         var map = L.map('map').setView([39.476, -6.372], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         var marker = L.marker([39.476, -6.372], {draggable: true}).addTo(map);
@@ -148,8 +216,7 @@
         function usarGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(p) {
-                    var lat = p.coords.latitude;
-                    var lng = p.coords.longitude;
+                    var lat = p.coords.latitude, lng = p.coords.longitude;
                     marker.setLatLng([lat, lng]);
                     map.setView([lat, lng], 17);
                     actualizarCoordenadas(lat, lng);
@@ -157,35 +224,29 @@
             }
         }
 
-        // Envío del reporte
+        // --- ENVÍO ---
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw8UMur6_6JcgYSQMtBndIjRYAFDVjbk2F7uO74pTKM2R6BdmTXR4-_BEb6ORuDb0t0/exec';
         const form = document.getElementById('formulario-dya');
-        const btnEnviar = document.getElementById('btn-enviar');
-        const spinner = document.getElementById('spinner');
-        const btnText = document.getElementById('btn-text');
-        
-       form.addEventListener('submit', e => {
-    e.preventDefault();
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const btnEnviar = document.getElementById('btn-enviar'), spinner = document.getElementById('spinner'), btnText = document.getElementById('btn-text');
+            
+            btnEnviar.disabled = true;
+            spinner.style.display = "inline-block"; 
+            btnText.innerText = traducciones[idiomaActual].enviando;
 
-    // 1. Bloqueamos botón y mostramos carga
-    btnEnviar.disabled = true;
-    spinner.style.display = "inline-block"; 
-    btnText.innerText = "Enviando...";
-
-    fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
-        .then(() => {
-            alert("¡Enviado con éxito!");
-            window.location.href = "index.html";
-        })
-        .catch(() => {
-            alert("Error al enviar.");
-            // 2. Si falla, lo reseteamos para poder reintentar
-            btnEnviar.disabled = false;
-            spinner.style.display = "none";
-            btnText.innerText = "Enviar aviso";
+            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
+                .then(() => {
+                    alert(traducciones[idiomaActual].exito);
+                    window.location.href = "index.html";
+                })
+                .catch(() => {
+                    alert(traducciones[idiomaActual].error);
+                    btnEnviar.disabled = false;
+                    spinner.style.display = "none";
+                    btnText.innerText = traducciones[idiomaActual].env;
+                });
         });
-});
     </script>
 </body>
 </html>
-
