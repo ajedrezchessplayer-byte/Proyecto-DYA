@@ -167,6 +167,14 @@
                     <label id="lbl-descripcion" for="descripcion">Descripción física:</label>
                     <textarea id="descripcion" name="descripcion" rows="3" placeholder="Hombre/Mujer, ... años, ropa clara/oscura..."></textarea>
                 </div>
+
+                <div class="campo">
+                    <label id="lbl-foto" for="input-foto">Añadir foto del lugar (Opcional):</label>
+                    <input type="file" id="input-foto" accept="image/*" capture="environment">
+                    <img id="vista-previa" style="display:none; width:100%; margin-top:10px; border-radius:8px; border: 1px solid #ccc;" />
+                    <input type="hidden" id="foto_base64" name="foto_base64">
+                    <input type="hidden" id="foto_nombre" name="foto_nombre">
+                </div>
             </div>
         </div>
 
@@ -194,13 +202,13 @@
                 'ubi': 'Location (Tap map or use GPS):',
                 'gps': 'Use my current GPS location',
                 'desc': 'Physical description:',
+                'foto': 'Add location photo (Optional):',
                 'aviso': '<b>Security Alert:</b> IP address is recorded to prevent false reports.',
                 'enviar': 'Send report to DYA',
                 'enviando': ' Sending...',
                 'exito': 'Report sent! Thank you.',
                 'btnLang': '🇪🇸 Español',
                 'placeholder': 'Man/Woman, approx. age, clothing...',
-                // Opciones del select
                 'c1': 'Food/Drink', 'c2': 'Clothing/Blankets', 'c3': 'Medical attention', 'c4': 'Shelter transfer', 'c5': 'Others (specify below)',
                 'u1': 'Low (Info only)', 'u2': 'Medium (Needs attention today)', 'u3': 'High (Critical situation)',
                 'm1': 'No minors visible', 'm2': 'Yes, minors present', 'm3': 'Not sure',
@@ -217,6 +225,7 @@
                 'ubi': 'Tu ubicación (Pulsa el mapa o usa el GPS):',
                 'gps': 'Usar mi ubicación GPS actual',
                 'desc': 'Descripción física:',
+                'foto': 'Añadir foto del lugar (Opcional):',
                 'aviso': '<b>Aviso de seguridad:</b> Para evitar reportes falsos, se registrará la dirección IP del dispositivo.',
                 'enviar': 'Enviar reporte a DYA',
                 'enviando': ' Enviando...',
@@ -245,12 +254,12 @@
             document.getElementById('lbl-ubicacion').innerText = t.ubi;
             document.getElementById('btn-gps-txt').innerText = t.gps;
             document.getElementById('lbl-descripcion').innerText = t.desc;
+            document.getElementById('lbl-foto').innerText = t.foto;
             document.getElementById('descripcion').placeholder = t.placeholder;
             document.getElementById('txt-aviso').innerHTML = t.aviso;
             document.getElementById('btn-text').innerText = t.enviar;
             btnLang.innerText = t.btnLang;
 
-            // Traducción de opciones
             document.getElementById('opt-comida').innerText = t.c1;
             document.getElementById('opt-abrigo').innerText = t.c2;
             document.getElementById('opt-sanitario').innerText = t.c3;
@@ -298,8 +307,50 @@
             }
         }
 
+        // --- PROCESAR FOTO Y COMPRIMIRLA ---
+        const inputFoto = document.getElementById('input-foto');
+        const vistaPrevia = document.getElementById('vista-previa');
+        const fotoBase64 = document.getElementById('foto_base64');
+        const fotoNombre = document.getElementById('foto_nombre');
+
+        inputFoto.addEventListener('change', function() {
+            const fichero = this.files[0];
+            if (fichero) {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        vistaPrevia.src = dataUrl;
+                        vistaPrevia.style.display = 'block';
+                        
+                        fotoBase64.value = dataUrl.split(',')[1];
+                        fotoNombre.value = "DYA_" + Date.now() + ".jpg";
+                    };
+                };
+                lector.readAsDataURL(fichero);
+            }
+        });
+
         // --- ENVÍO ---
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwaJ0eVI8_1ULxAqTeDMDuLhHUDL9Jkw6Be2X_cijEHyFrNQavxz-Um7rGJZPr2pn7c/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbw-VaLvx7XzqAG5ZHdAADQCaoy5xNA4T_Lpen3ncg2Zek5yC4lda1Gg7_VtACEw0v4p/exec'; 
+        
         const form = document.getElementById('formulario-dya');
         form.addEventListener('submit', e => {
             e.preventDefault();
@@ -309,7 +360,11 @@
             fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
                 .then(() => {
                     alert(traducciones[idiomaActual].exito);
-                    form.reset(); marker.setLatLng([39.476, -6.372]); actualizarCoordenadas(39.476, -6.372);
+                    form.reset(); 
+                    marker.setLatLng([39.476, -6.372]); 
+                    actualizarCoordenadas(39.476, -6.372);
+                    vistaPrevia.style.display = 'none';
+                    fotoBase64.value = '';
                 })
                 .finally(() => {
                     btnEnviar.disabled = false; spinner.style.display = 'none'; btnText.innerText = traducciones[idiomaActual].enviar;
