@@ -19,7 +19,6 @@
         h2 { color: #e60000; text-align: center; font-size: 1.8em; margin-top: 10px; }
         .subtitulo { text-align: center; margin-bottom: 30px; color: #444; font-weight: 500; }
         
-        /* Botones superiores */
         .controles-superiores {
             display: flex;
             justify-content: flex-end;
@@ -82,6 +81,15 @@
             animation: spin 1s ease-in-out infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Estilo para la vista previa de la foto */
+        #vista-previa {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: 2px solid #28a745;
+        }
     </style>
 </head>
 <body>
@@ -146,6 +154,14 @@
                     <label id="lbl-desc" for="descripcion">Descripción física:</label>
                     <textarea id="descripcion" name="descripcion" rows="3" placeholder="Hombre/Mujer, unos ... años, ropa clara/oscura..."></textarea>
                 </div>
+
+                <div class="campo">
+                    <label id="lbl-foto">¿Quiere añadir una foto del lugar? (Opcional):</label>
+                    <input type="file" id="input-foto" accept="image/*" capture="environment">
+                    <img id="vista-previa" />
+                    <input type="hidden" id="foto_base64" name="foto_base64">
+                    <input type="hidden" id="foto_nombre" name="foto_nombre">
+                </div>
             </div>
         </div>
 
@@ -173,6 +189,7 @@
                 'lug': 'Indicate the location (Tap the map):',
                 'gps': 'Use my current location',
                 'desc': 'Physical description:',
+                'foto': 'Would you like to add a photo? (Optional):',
                 'info': '<b>Information:</b> The IP address is stored for security purposes. Thank you for helping.',
                 'env': 'SEND ALERT TO DYA',
                 'enviando': 'Sending...',
@@ -194,6 +211,7 @@
                 'lug': 'Indique el lugar (Toque el mapa):',
                 'gps': 'Usar mi ubicación actual',
                 'desc': 'Descripción física:',
+                'foto': '¿Quiere añadir una foto del lugar? (Opcional):',
                 'info': '<b>Información:</b> Se guarda la dirección de internet (IP) del aviso por seguridad. Gracias por ayudar.',
                 'env': 'ENVIAR AVISO A DYA',
                 'enviando': 'Enviando...',
@@ -221,12 +239,12 @@
             document.getElementById('lbl-lugar').innerText = t.lug;
             document.getElementById('btn-gps-txt').innerText = t.gps;
             document.getElementById('lbl-desc').innerText = t.desc;
+            document.getElementById('lbl-foto').innerText = t.foto;
             document.getElementById('descripcion').placeholder = t.placeholder;
             document.getElementById('txt-info').innerHTML = t.info;
             document.getElementById('btn-text').innerText = t.env;
             btnLang.innerText = t.btnLang;
 
-            // Opciones
             document.getElementById('opt-comida').innerText = t.o1;
             document.getElementById('opt-abrigo').innerText = t.o2;
             document.getElementById('opt-sanitario').innerText = t.o3;
@@ -262,6 +280,47 @@
             }
         }
 
+        // --- LÓGICA DE LA FOTO (COMPRESIÓN) ---
+        const inputFoto = document.getElementById('input-foto');
+        const vistaPrevia = document.getElementById('vista-previa');
+        const fotoBase64 = document.getElementById('foto_base64');
+        const fotoNombre = document.getElementById('foto_nombre');
+
+        inputFoto.addEventListener('change', function() {
+            const fichero = this.files[0];
+            if (fichero) {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        vistaPrevia.src = dataUrl;
+                        vistaPrevia.style.display = 'block';
+                        
+                        fotoBase64.value = dataUrl.split(',')[1];
+                        fotoNombre.value = "DYA_MAYORES_" + Date.now() + ".jpg";
+                    };
+                };
+                lector.readAsDataURL(fichero);
+            }
+        });
+
         // --- ENVÍO ---
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw-VaLvx7XzqAG5ZHdAADQCaoy5xNA4T_Lpen3ncg2Zek5yC4lda1Gg7_VtACEw0v4p/exec';
         const form = document.getElementById('formulario-dya');
@@ -273,6 +332,9 @@
             fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors'})
                 .then(() => {
                     alert(traducciones[idiomaActual].exito);
+                    form.reset();
+                    vistaPrevia.style.display = 'none';
+                    fotoBase64.value = '';
                     window.location.href = "index.html";
                 })
                 .catch(() => {
